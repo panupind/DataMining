@@ -1,0 +1,131 @@
+---
+title: "RandomForest"
+#author: "Kumar"
+#date: "3/26/2019"
+output:
+  html_document: default
+  pdf_document: default
+
+---
+
+Lets start by importing the training datasets. We will also try and get a sense of the dependent variable (Target). Lets also convert the 'Target' variable to a categorical var (factor).
+```{r}
+#tget.train = read.csv("trainSample.csv", sep = ",", header = TRUE)
+str(tget.train)
+
+tget.train$Target = as.factor(tget.train$Target)
+tget.train$Age = as.factor(tget.train$Age)
+tget.train$Gender = as.factor(tget.train$Gender)
+tget.train$Occupation = as.factor(tget.train$Occupation)
+tget.train$AGE_BKT = as.factor(tget.train$AGE_BKT)
+nrow(tget.train)
+head(tget.train)
+str(tget.train)
+print(sum(tget.train$Target=="1")/nrow(tget.train))
+```
+
+
+Lets build our first random forest
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+seed=1000
+str(tget.train)
+set.seed(seed)
+rndFor = randomForest(Target ~ ., data = tget.train[,-1], 
+                   ntree=501, mtry = 3, nodesize = 10,
+                   importance=TRUE)
+
+print(rndFor)
+```
+
+The error rate plot w.r.t number of trees reveals that anything more than, say 50, trees is really not that valuable.
+```{r}
+rndFor$err.rate
+plot(rndFor, main="")
+legend("topright", c("OOB", "0", "1"), text.col=1:6, lty=1:3, col=1:3)
+title(main="Error Rates Random Forest tget.train")
+```
+
+
+
+List the importance of the variables. Larger the MeanDecrease values, the more important the variable. Look at the help files to get a better sense of how these are computed.
+```{r}
+print(rndFor$importance)
+print(importance(rndFor))
+
+```
+
+
+Now we will "tune" the Random Forest by trying different m values. We will stick with 51 trees (odd number of trees are preferable). The returned forest, "tRndFor" is the one corresponding to the best m
+```{r}
+set.seed(seed)
+tRndFor = tuneRF(x = tget.train[,-c(1,2)], 
+              y=tget.train$Target,
+              mtryStart = 3, 
+              ntreeTry = 51, 
+              stepFactor = 1.5, 
+              improve = 0.0001, 
+              trace=TRUE, 
+              plot = TRUE,
+              doBest = TRUE,
+              nodesize = 10, 
+              importance=TRUE
+)
+importance(tRndFor)
+```
+Lets make predictions on the training data and measure the prediction error rate. 
+```{r}
+## Scoring syntax
+tget.train$predict.class = predict(tRndFor, tget.train, type="class")
+tget.train$prob1 = predict(tRndFor, tget.train, type="prob")[,"1"]
+tbl=table(tget.train$Target, tget.train$predict.class)
+print((tbl[1,2]+tbl[2,1])/14000)
+```
+We next find the probability threshold that for the top decile. The choice of what threshold you use is quite subjective and depends on the benfits of having Target=1 vs the cost of sending out, say mailers, to each customer. Sincee the threshold for the top decile is lower than 0.5, I will use 0.5 
+```{r}
+qs=quantile(tget.train$prob1,prob = seq(0,1,length=11))
+print(qs)
+print(qs[10])
+threshold=0.5 
+```
+and measure what fraction of the top decile actually has a Target=1. 
+```{r}
+mean((tget.train$Target[tget.train$prob1>threshold])=="1")
+```
+
+
+Now using the tuned Random Forest from the previous step, and redo our errors and top decile calculations for the previously identified threshold. 
+```{r}
+#tget.test = read.csv("testSample.csv", sep = ",", header = TRUE)
+
+tget.test$Target = as.factor(tget.test$Target)
+nrow(tget.test)
+str(tget.test)
+
+tget.test$Target = as.factor(tget.test$Target)
+tget.test$Age = as.factor(tget.test$Age)
+tget.test$Gender = as.factor(tget.test$Gender)
+tget.test$Occupation = as.factor(tget.test$Occupation)
+tget.test$AGE_BKT = as.factor(tget.test$AGE_BKT)
+```
+
+
+```{r}
+tget.test$predict.class = predict(tRndFor, tget.test, type="class")
+tget.test$prob1 = predict(tRndFor, tget.test, type="prob")[,"1"]
+
+tget.test
+head(tget.test)
+nrow(tget.test)
+
+tbl=table(tget.test$Target, tget.test$predict.class)
+#print((tbl[1,2]+tbl[2,1])/6000)
+tbl
+
+```
+
+```{r}
+mean((tget.test$Target[tget.test$prob1>threshold])=="1")
+```
+

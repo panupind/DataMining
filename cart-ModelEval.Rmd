@@ -1,0 +1,194 @@
+---
+title: "CART"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r include=FALSE}
+#Replace the below command to point to your working directory
+setwd ("/Users/kumar/Dropbox/_Projects/GreatLearning/GL-ML-SlidesNotes/Week2/code")
+```
+
+
+```{r}
+CD.sample = read.csv("trainSample.csv", sep = ",", header = TRUE)
+CD.holdout = read.table("testSample.csv", sep = ",", header = TRUE)
+CD.sample = CD.sample[,-1]
+nrow(CD.sample)
+nrow(CD.holdout)
+head(CD.sample)
+table(CD.sample$Target)
+sum(CD.sample$Target)/nrow(CD.sample)
+```
+
+
+
+```{r}
+
+library(rpart)
+library(rpart.plot)
+
+
+tree1 <- rpart(formula = Target ~ ., 
+            data = CD.sample, method = "class")
+rpart.plot(tree1)
+```
+
+
+```{r}
+
+
+#?rpart.control
+
+r.ctrl = rpart.control(minsplit=100, minbucket = 10, cp = 0, xval = 10)
+tree2 <- rpart(formula = Target ~ ., 
+            data = CD.sample, method = "class", 
+            control = r.ctrl)
+rpart.plot(tree2)
+
+```
+
+```{r}
+printcp(tree2)
+plotcp(tree2)
+```
+
+```{r}
+tree3 = prune(tree2, cp= 0.0021 ,"CP")
+printcp(tree3)
+rpart.plot(tree3)
+
+```
+
+
+
+## Let's use rattle to see various model evaluation measures
+##rattle()
+
+View(CD.sample)
+## Scoring syntax
+?predict
+CD.sample$predict.class <- predict(ptree, CD.sample, type="class")
+CD.sample$predict.score <- predict(ptree, CD.sample, type="prob")
+
+
+View(CD.sample)
+head(CD.sample)
+
+
+## deciling code
+decile <- function(x){
+  deciles <- vector(length=10)
+  for (i in seq(0.1,1,.1)){
+    deciles[i*10] <- quantile(x, i, na.rm=T)
+  }
+  return (
+  ifelse(x<deciles[1], 1,
+  ifelse(x<deciles[2], 2,
+  ifelse(x<deciles[3], 3,
+  ifelse(x<deciles[4], 4,
+  ifelse(x<deciles[5], 5,
+  ifelse(x<deciles[6], 6,
+  ifelse(x<deciles[7], 7,
+  ifelse(x<deciles[8], 8,
+  ifelse(x<deciles[9], 9, 10
+  ))))))))))
+}
+
+class(CD.sample$predict.score)
+## deciling
+CD.sample$deciles <- decile(CD.sample$predict.score[,2])
+View(CD.sample)
+
+## Ranking code
+##install.packages("data.table")
+##install.packages("scales")
+library(data.table)
+library(scales)
+tmp_DT = data.table(CD.sample)
+rank <- tmp_DT[, list(
+  cnt = length(Target), 
+  cnt_resp = sum(Target), 
+  cnt_non_resp = sum(Target == 0)) , 
+  by=deciles][order(-deciles)]
+rank$rrate <- round(rank$cnt_resp / rank$cnt,4);
+rank$cum_resp <- cumsum(rank$cnt_resp)
+rank$cum_non_resp <- cumsum(rank$cnt_non_resp)
+rank$cum_rel_resp <- round(rank$cum_resp / sum(rank$cnt_resp),4);
+rank$cum_rel_non_resp <- round(rank$cum_non_resp / sum(rank$cnt_non_resp),4);
+rank$ks <- abs(rank$cum_rel_resp - rank$cum_rel_non_resp) * 100;
+rank$rrate <- percent(rank$rrate)
+rank$cum_rel_resp <- percent(rank$cum_rel_resp)
+rank$cum_rel_non_resp <- percent(rank$cum_rel_non_resp)
+
+View(rank)
+
+
+
+##install.packages("ROCR")
+##install.packages("ineq")
+library(ROCR)
+library(ineq)
+pred <- prediction(CD.sample$predict.score[,2], CD.sample$Target)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf)
+KS <- max(attr(perf, 'y.values')[[1]]-attr(perf, 'x.values')[[1]])
+auc <- performance(pred,"auc"); 
+auc <- as.numeric(auc@y.values)
+
+gini = ineq(CD.sample$predict.score[,2], type="Gini")
+
+with(CD.sample, table(Target, predict.class))
+auc
+KS
+gini
+
+View(rank)
+
+## Syntax to get the node path
+tree.path <- path.rpart(ptree, node = c(2, 12))
+nrow(CD.holdout)
+
+## Scoring Holdout sample
+CD.holdout$predict.class <- predict(ptree, CD.holdout, type="class")
+CD.holdout$predict.score <- predict(ptree, CD.holdout, type="prob")
+
+
+CD.holdout$deciles <- decile(CD.holdout$predict.score[,2])
+View(CD.holdout)
+
+## Ranking code
+tmp_DT = data.table(CD.holdout)
+h_rank <- tmp_DT[, list(
+  cnt = length(Target), 
+  cnt_resp = sum(Target), 
+  cnt_non_resp = sum(Target == 0)) , 
+  by=deciles][order(-deciles)]
+h_rank$rrate <- round(h_rank$cnt_resp / h_rank$cnt,4);
+h_rank$cum_resp <- cumsum(h_rank$cnt_resp)
+h_rank$cum_non_resp <- cumsum(h_rank$cnt_non_resp)
+h_rank$cum_rel_resp <- round(h_rank$cum_resp / sum(h_rank$cnt_resp),4);
+h_rank$cum_rel_non_resp <- round(h_rank$cum_non_resp / sum(h_rank$cnt_non_resp),4);
+h_rank$ks <- abs(h_rank$cum_rel_resp - h_rank$cum_rel_non_resp)*100;
+h_rank$rrate <- percent(h_rank$rrate)
+h_rank$cum_rel_resp <- percent(h_rank$cum_rel_resp)
+h_rank$cum_rel_non_resp <- percent(h_rank$cum_rel_non_resp)
+
+View(h_rank)
+
+pred <- prediction(CD.holdout$predict.score[,2], CD.holdout$Target)
+perf <- performance(pred, "tpr", "fpr")
+KS <- max(attr(perf, 'y.values')[[1]]-attr(perf, 'x.values')[[1]])
+auc <- performance(pred,"auc"); 
+auc <- as.numeric(auc@y.values)
+
+gini = ineq(CD.holdout$predict.score[,2], type="Gini")
+
+with(CD.holdout, table(Target, predict.class))
+auc
+KS
+gini
+
+
