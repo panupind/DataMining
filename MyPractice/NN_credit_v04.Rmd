@@ -1,0 +1,214 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+ 
+
+```{r}
+setwd("C:/Users/Sowmya CR/Google Drive/GL_BABI/DATA_MINING/Neural_network")
+creditdata = read.csv('g1.csv')
+str(creditdata)
+names(creditdata)
+
+```
+
+
+```{r}
+library(dummies)
+
+creditdata1 <- dummy.data.frame(creditdata[,-21])
+
+names(creditdata1)
+```
+
+
+```{r}
+library(scales)
+
+credit_scale <- scale(creditdata1)
+credit_scale = as.data.frame(credit_scale)
+head(credit_scale)
+
+
+
+```
+
+
+```{r}
+Target = creditdata$CREDIT
+credit_new <- cbind(Target, credit_scale)
+colnames(credit_new)
+```
+
+
+```{r}
+## split into training and test sets
+library(caTools)
+
+set.seed(123)
+split = sample.split(credit_new$Target, SplitRatio = 0.7)
+traindata = subset(credit_new, split == TRUE)
+testdata = subset(credit_new, split == FALSE)
+
+#write.csv(names(traindata), "formula.csv")
+
+```
+
+##Create formula for neural network
+```{r}
+form_credit = as.formula(Target ~ CHECK_A0to200DM + CHECK_AGT_200DM + CHECK_ALT_0DM + CHECK_ANO_CHECK_A + DURATION + C_HISTcredit_thisbank_paid + C_HISTcritical_acc + C_HISTdelay_in_past + C_HISTexisting_paid + C_HISTno_credit + PURPOSEbusiness + PURPOSEcar_new + PURPOSEcar_used + PURPOSEcar_used0 + PURPOSEdom_app + PURPOSEeducation + PURPOSEfurn_equip + PURPOSEradio_tv + PURPOSErepairs + PURPOSEretrain + AMOUNT + SAVE_A100_500DM + SAVE_A500_1000DM + SAVE_AGT_1000DM + SAVE_Alt_100DM + SAVE_ANO_SAVINGS_ACC + EMPLOY1to4YR + EMPLOY4to7YR + EMPLOYGT_7YR + EMPLOYLT_1YR + EMPLOYunemployed + INSTALL_R + PERSONALFEMALE_DIVORCED + PERSONALMALE_DIVORCED + PERSONALMALE_MARRIED + PERSONALMALE_SINGLE + GUARANTEEco_applicant + GUARANTEEguarantor + GUARANTEEnone + RESIDENCE + PROPERTYno_property + PROPERTYreal_estate + PROPERTYsavings + PROPERTYvehicle + AGE + INSTALL_Pbank + INSTALL_Pnone + INSTALL_Pstores + HOUSINGfor_free + HOUSINGown + HOUSINGrent + N_EXIST + JOBmgmt_selfemp + JOBskilled_office + JOBunskilled_non_res + JOBunskilled_res + N_PEOPLE + TELnone + TELyes + FOREIGNno + FOREIGNyes)
+```
+
+
+#Neural network with single hidden layer
+```{r}
+library(neuralnet)
+?neuralnet
+NN1 =neuralnet(formula=form_credit ,data = traindata, hidden=10, threshold=0.1,lifesign = "full")
+plot(NN1, cex=0.6, lwd=0.1)
+
+
+```
+
+
+
+```{r}
+nn2 <- neuralnet(formula = form_credit,
+                 data = traindata, 
+                 hidden = c(3,3),
+                 linear.output = FALSE,
+                 lifesign = "full",
+                 lifesign.step = 1,
+                 threshold = 0.7,
+                 stepmax = 2000
+)
+
+plot(nn2, cex=0.6)
+```
+
+```{r}
+#nn2$net.result
+```
+
+
+
+```{r}
+## Assigning the Probabilities to Dev Sample
+traindata$Prob = nn2$net.result[[1]] 
+View(traindata)
+```
+
+
+```{r}
+## The distribution of the estimated probabilities
+hist(traindata$Prob, breaks=20)
+
+## Assgining 0 / 1 class based on certain threshold
+traindata$Class = ifelse(traindata$Prob>0.20,1,0)
+tabtrain = with( traindata, table(Target, as.factor(Class)  ))
+tabtrain
+```
+
+```{r}
+TN_train = tabtrain[1,1]
+TN_train
+
+
+TP_train = tabtrain[2,2]
+TP_train
+
+FN_train = tabtrain[2,1]
+FN_train
+
+FP_train = tabtrain[1,2]
+FP_train
+
+train_acc = (TN_train+TP_train)/(TN_train+TP_train+FN_train+FP_train)
+train_acc
+
+train_sens = TP_train/(TP_train+FN_train)
+train_sens
+
+
+train_spec = TN_train/(TN_train+FP_train)
+train_spec
+```
+
+
+```{r}
+names(testdata)
+```
+
+
+#Predict for test data
+```{r}
+compute_test = compute(nn2, testdata[,2:62]) 
+testdata$Predict.score = compute_test$net.result
+
+testdata$Class = ifelse(testdata$Predict.score>0.20,1,0)
+tabtest = with( testdata, table(Target, as.factor(Class)  ))
+tabtest
+```
+
+
+
+```{r}
+TN_test = tabtest[1,1]
+TN_test
+
+
+TP_test = tabtest[2,2]
+TP_test
+
+FN_test = tabtest[2,1]
+FN_test
+
+FP_test = tabtest[1,2]
+FP_test
+
+test_acc = (TN_test+TP_test)/(TN_test+TP_test+FN_test+FP_test)
+test_acc
+
+test_sens = TP_test/(TP_test+FN_test)
+test_sens
+
+
+test_spec = TN_test/(TN_test+FP_test)
+test_spec
+```
+
+```{r}
+df_results_train = data.frame(train_acc, train_sens, train_spec)
+names(df_results_train) = c("ACC", "SENS", "SPEC")
+df_results_test = data.frame(test_acc, test_sens, test_spec)
+names(df_results_test) = c("ACC", "SENS", "SPEC")
+
+?rbind
+df_fin =rbind(df_results_train, df_results_test)
+row.names(df_fin) = c('NN_train', 'NN_test')
+round(df_fin,2)
+```
+
+```{r}
+library(pROC)
+#Train data
+roc_obj = roc(traindata$Target, traindata$Prob[,1])
+plot(roc_obj, print.auc = T)
+
+traindata$Prob[,1]
+
+
+#test data
+testdata$Predict.score
+roc_obj1 = roc(testdata$Target, testdata$Predict.score[,1])
+
+
+plot(roc_obj1, print.auc = T)
+
+```
+
+
+
+
+

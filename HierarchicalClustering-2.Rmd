@@ -1,0 +1,88 @@
+---
+title: "Hierarchical Clustering"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+```{r include=FALSE}
+#Replace the below command to point to your working directory
+setwd ("/Users/kumar/Dropbox/_Projects/GreatLearning/GL-scripts/")
+```
+
+
+We will work with this simple Customer Spend Data:
+```{r}
+custSpendData <- read.csv("D:/Prasanna/Personal/Learning/Other Reads/GL/Course Material/Data Mining/DataSets/Cust_Spend_Data.csv", header=TRUE)
+print(custSpendData)
+```
+
+
+The dist function computes the distance between row vectors of a given matrix.  Several distance functions can be used. 
+```{r}
+distMatrix = dist(x=custSpendData[,3:7], method = "euclidean") 
+#distMatrix = dist(x=custSpendData[,3:7], method = "minkowski", p=2)   #equivalent to above line
+print(distMatrix, digits = 3)
+```
+
+Notice that the Avg_Mnthly_Spend column dominates the distance since its magnitude is much higher than the other columns. Since it there is no reason to over-weight one column than another, we scale all the columns to mean zero and unit standard deviation.
+
+```{r}
+## scale function standardizes the values
+custSpendData.Scaled = scale(custSpendData[,3:7])
+print(custSpendData.Scaled)
+```
+
+
+Checking the scaling
+```{r}
+apply(custSpendData.Scaled,2,mean)
+apply(custSpendData.Scaled,2,sd)
+```
+
+and the scaled distance matrix
+```{r}
+# Compute distance matrix again with scaled data
+distMatrix.Scaled = dist(x=custSpendData.Scaled, method = "euclidean") 
+print(distMatrix.Scaled, digits = 3)
+```
+
+
+Hierarchical Clustring with hclust
+```{r}
+cluster <- hclust(distMatrix.Scaled, method = "average")
+plot(cluster, labels = as.character(custSpendData[,2]))
+```
+
+
+The cluster combining heights
+```{r}
+cluster$height
+```
+
+
+Now we can choose a K, lets say 3, and draw boxes around the 3 clusters
+```{r}
+# Plot rectagles defining the clusters for any given level of K 
+plot(cluster, labels = as.character(custSpendData[,2]))
+rect.hclust(cluster, k=2, border="red")
+```
+
+
+Lets add the cluter number field back to the original dataset
+
+```{r}
+custSpendData$Cluster <- cutree(cluster, k=3)
+print(custSpendData)
+```
+
+Finally lets aggregate the three types of customers by averaging columns 3 to 7
+
+```{r}
+## Aggregate columns 3:7 for each cluster by their means
+custProfile = aggregate(custSpendData[,-c(1,2, 8)],list(custSpendData$Cluster),FUN="mean")
+print(custProfile)
+```
+

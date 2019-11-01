@@ -1,0 +1,59 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(readr)
+custSpendData <- read.csv("D:/Prasanna/Personal/Learning/Other Reads/GL/Course Material/Data Mining/DataSets/Cust_Spend_Data.csv" , header=TRUE)
+attach(custSpendData)
+print(custSpendData)
+install.packages("car")
+library(car)
+```
+```{r}
+#distance without  scaling
+hcDistMatrix <- dist(custSpendData[,3:7],method="euclidean")
+hcDistMatrix
+```
+```{r}
+custSpendDataScaled <- scale(custSpendData[,3:7])
+custSpendDataScaled
+```
+```{r}
+apply(custSpendDataScaled,2,mean)
+apply(custSpendDataScaled,2,sd)
+```
+```{r}
+hcDistMatrixScaled <- dist(custSpendDataScaled, method = "euclidean")
+print(hcDistMatrixScaled)
+```
+```{r}
+# perform hierarchical clustering
+hcluster <- hclust(hcDistMatrixScaled , method ="average")
+
+plot(hcluster , labels = as.character(custSpendData[,2]))
+hcluster$height
+rect.hclust(hcluster, k=3 , border = "red")
+
+```
+```{r}
+custSpendData$cluster <- cutree(hcluster, k=3 )
+print(custSpendData)
+```
+```{r}
+custProfile = aggregate(x = custSpendData[,-c(1,2,8)],by = list (custSpendData$cluster) ,  FUN= mean)
+print(custProfile)
+
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

@@ -1,0 +1,101 @@
+---
+title: "Model Perfomance Measures"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r include=FALSE}
+#Replace the below command to point to your working directory
+setwd ("/Users/kumar/Dropbox/_Projects/GreatLearning/GL-ML-SlidesNotes/Week2/code")
+```
+
+Lets first load a training data set:
+```{r}
+trainDS = read.csv("trainSample.csv", sep = ",", header = TRUE)
+#trainDS$Target=as.factor(trainDS$Target)
+trainDS=trainDS[,-1]
+head(trainDS)
+nrow(trainDS)
+sum(trainDS$Target==1)/nrow(trainDS)
+```
+
+Next, fit a simple Decision Tree model and also to use the decision tree to predict the class for each row and/or score the probabilities.
+
+```{r}
+library(rpart)
+library(rpart.plot)
+
+tree <- rpart(formula = Target ~ ., 
+            data = trainDS, method = "class", minsplit=100, minbucket = 10, cp = 0.0021, xval = 10)
+printcp(tree)
+rpart.plot(tree)
+
+trainDS$prediction = predict(tree, trainDS, type="class")
+trainDS$prob1 = predict(tree, trainDS, type="prob")[,"1"]
+head(trainDS)
+```
+
+
+
+In the rest of this document, we will sequentially go through a bunch of performance measures. Lets begin with the confusion matrix on the actual vs the predicted Target from the decision tree. The code below also calculates the error rate
+
+```{r}
+tbl=table(trainDS$Target, trainDS$prediction)
+print(tbl)
+
+print((tbl[1,2]+tbl[2,1])/14000)
+```
+Next lets calculate the decile thresholds and use those thresholds to compute various columns in a rank order table:
+```{r}
+probs=seq(0,1,length=11)
+qs=quantile(trainDS$prob1, probs)
+trainDS$deciles=cut(trainDS$prob1, unique(qs),include.lowest = TRUE,right=FALSE)
+table(trainDS$deciles)
+
+library(data.table)
+trainDT = data.table(trainDS)
+rankTbl = trainDT[, list(
+  cnt = length(Target), 
+  cnt_tar1 = sum(Target), 
+  cnt_tar0 = sum(Target == 0)
+  ), 
+  by=deciles][order(-deciles)]
+
+rankTbl$rrate = round(rankTbl$cnt_tar1 / rankTbl$cnt,4)*100;
+rankTbl$cum_resp = cumsum(rankTbl$cnt_tar1)
+rankTbl$cum_non_resp = cumsum(rankTbl$cnt_tar0)
+rankTbl$cum_rel_resp = round(rankTbl$cum_resp / sum(rankTbl$cnt_tar1),4)*100;
+rankTbl$cum_rel_non_resp = round(rankTbl$cum_non_resp / sum(rankTbl$cnt_tar0),4)*100;
+rankTbl$ks = abs(rankTbl$cum_rel_resp - rankTbl$cum_rel_non_resp);
+
+print(rankTbl)
+
+```
+
+
+We will next use the ROCR and ineq packages to compute AUC, KS and gini
+```{r}
+library(ROCR)
+library(ineq)
+predObj = prediction(trainDS$prob1, trainDS$Target)
+perf = performance(predObj, "tpr", "fpr")
+plot(perf)
+KS = max(perf@y.values[[1]]-perf@x.values[[1]])
+auc = performance(predObj,"auc"); 
+auc = as.numeric(auc@y.values)
+
+gini = ineq(trainDS$prob1, type="Gini")
+
+```
+
+Finally, we use the Concordance function in the InformationValue package to find the concordance and discordcance ratios:
+```{r}
+#install.packages('InformationValue)
+library(InformationValue)
+Concordance(actuals=trainDS$Target, predictedScores=trainDS$prob1)
+```
+
+
+
+

@@ -1,0 +1,120 @@
+---
+title: "largeDist"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+studentAssess
+nrow(studentAssess)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+#summary(cars)
+gc()
+memory.limit(size=180000000)
+print("\n")
+distStd_euc = dist(studentAssess, method = "euclidean")
+```
+```{r}
+memory.limit()
+memory.size()
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+#install.packages("ff")
+library(ff)
+
+#getwd()
+
+studentAssess <- read.csv2.ffdf( file = "studentAssessment.csv",header = T , sep = "," )
+summary(studentAssess)
+
+class(studentAssess)
+dim(studentAssess)
+
+#as.numeric(unlist(studentAssess))
+lapply(studentAssess[,1:5], as.numeric)
+str(studentAssess)
+```
+
+
+```{r}
+# # xx <- as.data.frame(studentAssess)
+# class(xx)
+# 
+# #distStd_euc = dist(x = as.data.frame(studentAssess))
+
+
+```
+
+```{r}
+#str(studentAssess$id_assessment)
+
+
+class(studentAssess$id_assessment)
+class(studentAssess$id_student)
+class(studentAssess$date_submitted)
+class(studentAssess$is_banked)
+class(studentAssess$score)
+```
+
+
+```{r}
+sum(is.na(studentAssess$id_assessment))
+sum(is.na(studentAssess$id_student))
+sum(is.na(studentAssess$date_submitted))
+sum(is.na(studentAssess$is_banked))
+sum(is.na(studentAssess$score))
+
+#head(studentAssess$id_assessment[is.na(as.numeric(studentAssess$id_assessment))])
+
+```
+
+```{r}
+dim(studentAssess)
+class(studentAssess)
+#str(studentAssess)
+#studentAssess[,5]
+
+
+```
+
+
+```{r}
+xx <- as.matrix(studentAssess)
+str(xx)
+distStd_euc <- dist(studentAssess[,1:5])
+
+
+memory.size(max = NA)
+memory.limit()
+
+memory.size(max = FALSE)
+memory.limit()
+
+memory.size(max = TRUE)
+memory.limit()
+
+
+
+memory.profile()
+# (studentAssess[1,])
+```
+
