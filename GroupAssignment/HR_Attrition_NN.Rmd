@@ -1,0 +1,358 @@
+---
+title: "HR_Attribution_NN"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+gc()
+Sys.setenv(http_proxy = "http://www-proxy.us.oracle.com:80")
+Sys.setenv(https_proxy = "https://www-proxy.us.oracle.com:80")
+Sys.getenv("http_proxy")
+Sys.getenv("https_proxy")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r}
+# Read the file and load the data
+library(readr)
+HR_Data_NN <- read_csv("1452762979_586__HR_Employee_Attrition_Data.csv")
+View(HR_Data_NN)
+dim(HR_Data_NN)
+str(HR_Data_NN)
+head(HR_Data_NN)
+tail(HR_Data_NN)
+summary(HR_Data_NN)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+library(dummies)
+library(caret)
+library(caTools)
+library(ggplot2)
+library(corrplot)
+library(scales)
+library(neuralnet)
+library(data.table)
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+attach(HR_Data_NN)
+
+
+HR_Data_NN <- as.data.frame(HR_Data_NN)
+class(HR_Data_NN)
+
+dim(HR_Data_NN)
+
+# Removing columns that are not significant from the Dataframe
+HR_Data_NN_Active <-  subset(HR_Data_NN , select = -c(EmployeeCount, EmployeeNumber , Over18, StandardHours ))
+
+
+
+dim(HR_Data_NN_Active)
+ HR_Data_NN_Active$Attrition <- ifelse(HR_Data_NN_Active$Attrition=="Yes",1,0)
+ HR_Data_NN_Active$Attrition  <- as.numeric(HR_Data_NN_Active$Attrition)
+ #HR_Data_NN_Active$Attrition
+ 
+ HR_Data_NN_Active$BusinessTravel   <- as.factor(HR_Data_NN_Active$BusinessTravel)
+ HR_Data_NN_Active$Department  <- as.factor(HR_Data_NN_Active$Department)
+ HR_Data_NN_Active$EducationField  <- as.factor(HR_Data_NN_Active$EducationField)
+ HR_Data_NN_Active$Gender  <- as.factor(HR_Data_NN_Active$Gender)
+ HR_Data_NN_Active$JobRole <- as.factor(HR_Data_NN_Active$JobRole)
+ HR_Data_NN_Active$MaritalStatus <- as.factor(HR_Data_NN_Active$MaritalStatus)
+ HR_Data_NN_Active$OverTime <- as.factor(HR_Data_NN_Active$OverTime)
+ str(HR_Data_NN_Active)
+
+ HR_Data_NN_Active
+ 
+# Convert character variables into Factor
+
+
+
+
+```
+
+```{r}
+library(dummies)
+```
+
+
+```{r}
+#Create dummy variables from the DataFrame . This will transform the data for variables of type factor into o's and 1's for each category
+
+HR_Data_NN_Active_dum  = dummy.data.frame(HR_Data_NN_Active[,-2])
+
+
+HR_Data_NN_Active_dum
+dim(HR_Data_NN_Active_dum)
+names(HR_Data_NN_Active_dum)
+```
+
+```{r}
+# Scale the Data in new dataframe tranformed using Dummy variables for Character variables and numeric variables
+
+
+
+HR_Data_NN_Active_scale <- scale(HR_Data_NN_Active_dum)
+HR_Data_NN_Active_scale = as.data.table(HR_Data_NN_Active_scale)
+head(HR_Data_NN_Active_scale)
+
+names(HR_Data_NN_Active_scale)
+dim(HR_Data_NN_Active_scale)
+
+
+
+```
+
+
+
+
+```{r}
+# Combine the active Dataset which is scaled and the new dataset with Traget columns
+
+Target_NN <- HR_Data_NN_Active$Attrition
+HR_Data_NN_Active_New <- cbind(Target_NN , HR_Data_NN_Active_scale)
+dim(HR_Data_NN_Active_New)
+names(HR_Data_NN_Active_New)
+
+class(HR_Data_NN_Active_New)
+
+setnames(x=HR_Data_NN_Active_New, old=names(HR_Data_NN_Active_New), new=gsub(" ","",names(HR_Data_NN_Active_New)))
+
+setnames(x=HR_Data_NN_Active_New, old=names(HR_Data_NN_Active_New), new=gsub("&","",names(HR_Data_NN_Active_New)))
+
+names(HR_Data_NN_Active_New)
+str(HR_Data_NN_Active_New)
+
+HR_Data_NN_Active_New <- as.data.frame(HR_Data_NN_Active_New)
+class(HR_Data_NN_Active_New)
+# HR_Data_NN_Active_New
+
+```
+
+
+```{r}
+## split into training and test sets
+set.seed(123)
+prop.table(table(HR_Data_NN$Attrition))
+split = sample.split(HR_Data_NN_Active_New$Target, SplitRatio = 0.7)
+traindata_NN = subset(HR_Data_NN_Active_New, split == TRUE)
+testdata_NN = subset(HR_Data_NN_Active_New, split == FALSE)
+
+
+prop.table(table(traindata_NN$Target_NN))
+prop.table(table(testdata_NN$Target_NN))
+
+
+names(traindata_NN)
+str(HR_Data_NN_Active_New)
+
+
+```
+ 
+
+```{r}
+# Formula for NN
+
+form_HR_NN <- as.formula(`Target_NN`  ~   `BusinessTravelTravel_Rarely`  +  `DepartmentHumanResources`   +  `DepartmentSales`  +  `Education`  +  `EducationFieldLifeSciences`  +  `EducationFieldMedical`+  `EducationFieldTechnicalDegree`  +  `GenderFemale`  +  `HourlyRate`  +  `JobLevel`  +  `JobRoleHumanResources`  +  `JobRoleManager`  +  `JobRoleResearchDirector`  +  `JobRoleSalesExecutive` +  `JobSatisfaction`  +  `MaritalStatusMarried`  +  `MonthlyIncome`  +  `NumCompaniesWorked`  +  `OverTimeYes`  +  `PerformanceRating`  +  `StockOptionLevel`  +  `TrainingTimesLastYear`  +  `YearsAtCompany`  +  `YearsSinceLastPromotion`  +  `Age`  +  `BusinessTravelTravel_Frequently`  +  `DailyRate`    +  `DepartmentResearchDevelopment`  +  `DistanceFromHome`  +  `EducationFieldHumanResources`   +  `EducationFieldMarketing`  +  `EducationFieldOther`  +  `EnvironmentSatisfaction`  +  `GenderMale`+  `JobInvolvement`  +  `JobRoleHealthcareRepresentative`  +  `JobRoleLaboratoryTechnician`  +  `JobRoleManufacturingDirector`  +  `JobRoleResearchScientist`  +  `JobRoleSalesRepresentative`  +  `MaritalStatusDivorced`  +  `MaritalStatusSingle`  +  `MonthlyRate`  +  `OverTimeNo`  +  `PercentSalaryHike`  +  `RelationshipSatisfaction`  +  `TotalWorkingYears`  +  `WorkLifeBalance`  +  `YearsInCurrentRole`  +  `YearsWithCurrManager`  )
+
+
+#`Target_NN`  ~  `BusinessTravelNon-Travel`  +  `BusinessTravelTravel_Rarely`  +  `DepartmentHumanResources`  +  `DepartmentSales`  +  `Education`  +  `EducationFieldLifeSciences`  +  `EducationFieldMedical`  +  `EducationFieldTechnicalDegree`  +  `GenderFemale`  +  `HourlyRate`  +  `JobLevel`  +  `JobRoleHumanResources`  +  `JobRoleManager`  +  `JobRoleResearchDirector`  +  `JobRoleSalesExecutive`  +  `JobSatisfaction`  +  `MaritalStatusMarried`  +  `MonthlyIncome`  +  `NumCompaniesWorked`  +  `OverTimeYes`  +  `PerformanceRating`  +  `StockOptionLevel`  +  `TrainingTimesLastYear`  +  `YearsAtCompany`  +  `YearsSinceLastPromotion`  +  `Age`  +  `BusinessTravelTravel_Frequently`  +  `DailyRate`  +  `DepartmentResearch&Development`  +  `DistanceFromHome`  +  `EducationFieldHumanResources`  +  `EducationFieldMarketing`  +  `EducationFieldOther`  +  `EnvironmentSatisfaction`  +  `GenderMale`  +  `JobInvolvement`  +  `JobRoleHealthcareRepresentative`  +  `JobRoleLaboratoryTechnician`  +  `JobRoleManufacturingDirector`  +  `JobRoleResearchScientist`  +  `JobRoleSalesRepresentative`  +  `MaritalStatusDivorced`  +  `MaritalStatusSingle`  +  `MonthlyRate`  +  `OverTimeNo`  +  `PercentSalaryHike`  +  `RelationshipSatisfaction`  +  `TotalWorkingYears`  +  `WorkLifeBalance`  +  `YearsInCurrentRole`  +  `YearsWithCurrManager`  
+
+print(form_HR_NN)
+```
+
+
+```{r}
+# Build the model
+
+
+?neuralnet
+NN_HR =neuralnet(formula = form_HR_NN ,data = traindata_NN, hidden=10, threshold=0.1,lifesign = "full" )
+plot(NN_HR, cex=0.6, lwd=0.1)
+```
+
+
+```{r}
+#print(NN_HR$net.result)
+summary(NN_HR$net.result)
+```
+
+*Network model after changing the threshold*
+```{r}
+library(neuralnet)
+
+gc()
+NN_HR2 <- neuralnet(formula = form_HR_NN,
+                 data = traindata_NN, 
+                 hidden = c(4,4),
+                 linear.output = FALSE,
+                 lifesign = "full",
+                 lifesign.step = 1,
+                 threshold = 0.7,
+                 stepmax = 2000)
+plot(NN_HR2, cex=0.6, lwd=0.1)
+```
+
+```{r}
+summary(NN_HR2$net.result)
+NN_HR2$net.result 
+nrow(traindata_NN)
+```
+
+
+```{r}
+## Assigning the Probabilities to Dev Sample
+traindata_NN$Prob = NN_HR2$net.result[[1]]
+#traindata_NN$Prob = as.data.frame(traindata_NN$Prob)
+summary(traindata_NN$Prob)
+
+
+#View(traindata_NN)
+```
+
+
+```{r}
+hist(traindata_NN$Prob, breaks=20)
+
+## Assgining 0 / 1 class based on certain threshold
+traindata_NN$Class = ifelse(traindata_NN$Prob>0.50,1,0)
+tabtrain_NN = with( traindata_NN, table(Target_NN, as.factor(Class)  ))
+tabtrain_NN
+
+```
+
+
+```{r}
+TN_train_NN = tabtrain_NN[1,1]
+TN_train_NN
+
+
+TP_train_NN = tabtrain_NN[2,2]
+TP_train_NN
+
+FN_train_NN = tabtrain_NN[2,1]
+FN_train_NN
+
+FP_train_NN = tabtrain_NN[1,2]
+FP_train_NN
+
+train_NN_acc = (TN_train_NN+TP_train_NN)/(TN_train_NN+TP_train_NN+FN_train_NN+FP_train_NN)
+train_NN_acc
+
+train_NN_sens = TP_train_NN/(TP_train_NN+FN_train_NN)
+train_NN_sens
+
+
+train_NN_spec = TN_train_NN/(TN_train_NN+FP_train_NN)
+train_NN_spec
+
+
+```
+*#Predict for test data*
+```{r}
+names(testdata_NN)
+
+compute_test_NN = compute(NN_HR2, testdata_NN[,-1]) 
+testdata_NN$Predict.score = compute_test_NN$net.result
+# testdata_NN$Predict.score
+
+testdata_NN$Class = ifelse(testdata_NN$Predict.score>0.50,1,0)
+tabtest_NN = with( testdata_NN, table(Target_NN, as.factor(Class)  ))
+tabtest_NN
+```
+
+```{r}
+TN_test_NN = tabtest_NN[1,1]
+TN_test_NN
+
+
+TP_test_NN = tabtest_NN[2,2]
+TP_test_NN
+
+FN_test_NN = tabtest_NN[2,1]
+FN_test_NN
+
+FP_test_NN = tabtest_NN[1,2]
+FP_test_NN
+
+test_NN_acc = (TN_test_NN+TP_test_NN)/(TN_test_NN+TP_test_NN+FN_test_NN+FP_test_NN)
+test_NN_acc
+
+test_NN_sens = TP_test_NN/(TP_test_NN+FN_test_NN)
+test_NN_sens
+
+
+test_NN_spec = TN_test_NN/(TN_test_NN+FP_test_NN)
+test_NN_spec
+```
+*Compare Train and test results*
+```{r}
+df_results_train_NN = data.frame(train_NN_acc, train_NN_sens, train_NN_spec)
+names(df_results_train_NN) = c("ACC", "SENS", "SPEC")
+df_results_test_NN = data.frame(test_NN_acc, test_NN_sens, test_NN_spec)
+names(df_results_test_NN) = c("ACC", "SENS", "SPEC")
+
+?rbind
+df_fin_NN =rbind(df_results_train_NN, df_results_test_NN)
+row.names(df_fin_NN) = c('HR_Attrition_NN_train', 'HR_Attrition_NN_test')
+round(df_fin_NN,2)
+```
+
+
+```{r}
+#install.packages("pROC")
+library(pROC)
+#Train data
+
+
+
+roc_obj_train_NN = roc(traindata_NN$Target_NN, traindata_NN$Prob[,1])
+roc_obj_train_NN
+plot(roc_obj_train_NN, print.auc = T)
+
+
+#traindata_NN$Prob[,1]
+
+
+#test data
+#testdata_NN$Predict.score
+roc_obj_test_NN = roc(testdata_NN$Target_NN, testdata_NN$Predict.score[,1])
+
+
+plot(roc_obj_test_NN, print.auc = T)
+
+#testdata_NN$Prob[,1]
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -9,11 +9,8 @@ output:
 
 ```{r}
 
-#setwd("C:/Users/Sowmya CR/Google Drive/GL_BABI/DATA_MINING/CART")
-#creditdata = read.csv('g1.csv')
-creditdata
-Sys.unsetenv("http_proxy")
-Sys.unsetenv("https_proxy")
+setwd("C:/Users/Sowmya CR/Google Drive/GL_BABI/DATA_MINING/CART")
+creditdata = read.csv('g1.csv')
 str(creditdata)
 dim(creditdata)
 ```
@@ -65,7 +62,6 @@ ggplot(creditdata, aes(fill=CREDIT, x=PURPOSE, y=as.numeric(PURPOSE))) +
 ggplot(creditdata, aes(fill=CREDIT, x=SAVE_A, y=as.numeric(SAVE_A))) +
   geom_bar( stat="identity", position="fill")
 
-summary(creditdata$CREDIT)
 
 ```
 
@@ -83,7 +79,6 @@ testdata = subset(creditdata, split == FALSE)
 ## Check if distribution of partition data is correct Testing dataset
 prop.table(table(creditdata$CREDIT))
 prop.table(table(creditdata$CREDIT))
-str(creditdata)
 ```
 
 Build a fully grown tree
@@ -91,8 +86,6 @@ Build a fully grown tree
 library(rpart)
 library(rpart.plot)
 set.seed(123)
-rpart.plot
-
 
 tree_full = rpart(formula = CREDIT~., data = traindata)
 rpart.plot(tree_full, cex=0.5)
@@ -108,7 +101,7 @@ prp(tree_full, faclen = 0, cex = 0.8, extra = 1, box.col = boxcols)
 #Variable importance
 library(caret)
 
-ptree=summary(tree_full)
+summary(tree_full)
 ptree$variable.importance
 
 df_cart=data.frame(round(ptree$variable.importance,2))
@@ -146,14 +139,9 @@ train_spec
 
 
 ```{r}
-## Predict on Test Data using the CART model
+## Predict using the CART model
 testdata$predict.class=predict(tree_full,testdata,type="class")
 testdata$predict.score=predict(tree_full,testdata)
-
-testdata$predict.class
-
-print(testdata$predict.class)
-print(testdata$predict.score)
 
 ## Creating the confusion matrix
 tabtest=with(testdata,table(CREDIT,predict.class))
@@ -206,8 +194,7 @@ testdata$predict.score = NULL
 
 set.seed(123)
 ?rpart
-library(rpart)
-library(rpart.plot)
+
 tree=rpart(formula = CREDIT ~ ., data = traindata, method="class",control = rpart.control(minsplit = 50,  minbucket = 15, cp = 0.0001))
 
 
@@ -365,7 +352,7 @@ names(df_results_test) = c("ACC", "SENS", "SPEC")
 
 ?rbind
 df_fin =rbind(df_fin, df_results_train, df_results_test)
-names(df_fin) = c('tree_full_train', 'tree_full_test', 'tree_train', 'tree_test', 'ptree_train', 'ptree_test')
+row.names(df_fin) = c('tree_full_train', 'tree_full_test', 'tree_train', 'tree_test', 'ptree_train', 'ptree_test')
 round(df_fin,2)
 ```
 #Best result from tree with manual pruning
@@ -409,11 +396,9 @@ testdata$predict.score = NULL
 #Calculate AUC and KS with best model
 ```{r}
 ## Predict using the CART model
-library(caret)
 traindata$predict.class=predict(tree,traindata,type="class")
 traindata$predict.score=predict(tree,traindata)
 
-#traindata$predict.score
 View(traindata)
 
 ```

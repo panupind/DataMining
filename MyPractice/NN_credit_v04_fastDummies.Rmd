@@ -1,0 +1,361 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+ 
+
+```{r}
+#setwd("C:/Users/Sowmya CR/Google Drive/GL_BABI/DATA_MINING/Neural_network")
+#creditdata = read.csv('g1.csv')
+
+Sys.unsetenv("http_proxy")
+Sys.unsetenv("https_proxy")
+gc()
+creditdata
+str(creditdata)
+names(creditdata)
+
+```
+
+
+```{r}
+# remove.packages("dummies")
+# install.packages("dummies")
+# install.packages("benchmarkme")
+# install.packages("fastDummies")
+library(dummies)
+library(benchmarkme)
+library(fastDummies)
+```
+
+
+```{r}
+#benchmarkme::get_available_benchmarks()
+print( benchmarkme::get_ram())
+memory.size()
+
+# benchmarkme::get_cpu()
+#benchmarkme::get_sys_details()
+
+
+```
+
+
+```{r}
+dim(creditdata)
+if ( exists("creditdata_New"))  {
+  remove(creditdata_New)
+}
+
+
+if ( exists("creditdata1"))  {
+  remove(creditdata1)
+}
+```
+
+
+```{r}
+library(dummies)
+creditdata_dum  = dummy.data.frame(creditdata[,-21])
+
+
+creditdata_dum
+dim(creditdata_dum)
+names(creditdata_dum)
+```
+
+
+```{r}
+str(creditdata)
+creditdata = as.data.frame(creditdata)
+class(creditdata)
+
+names(creditdata[1:20])
+
+creditdata$DURATION = as.numeric(creditdata$DURATION)
+```
+
+```{r}
+# This  code can be ignored if encoding with Dummies work in your system
+# Used these workaround code , as a pre-requisite for fast dummies
+# Step1 
+
+vecCol = c()
+vecNum = c()
+vecChr = c()
+
+
+i = 1
+j = 1
+for (el in names(creditdata[1:20]))
+{
+  if ( is.character(creditdata[,el]))
+  {
+    vecChr[i] = el
+    i = i +1
+    
+  }
+  if ( is.numeric(creditdata[,el]))
+  {
+    vecNum[j] = el
+    j = j + 1
+    
+    }
+  
+
+}
+
+print("VecCHR")
+print(vecChr)
+print("VecNUM")
+print(vecNum)
+vecCol = c (vecChr , vecNum)
+print("VecCOL")
+print(vecCol)
+
+
+```
+
+
+
+
+
+
+```{r}
+# This  code can be ignored if encoding with Dummies work in your system
+# Used these workaround code , as a pre-requisite for fast dummies
+# Step2 
+
+gc()
+dim(creditdata)
+#str(creditdata)
+creditdata_dum <- dummy_columns( creditdata , select_columns =  vecChr)
+dim(creditdata_dum)
+names(creditdata_dum)
+
+print("CREDIT DATA NEW WITH TARGET AND DUMMY COLUMNS")
+creditdata_dum =  creditdata_dum[,21:75]
+creditdata_dum
+
+
+#creditdata_New
+```
+```{r}
+
+dim(creditdata_dum)
+print("CREDIT DATA NEW WITH NUMERIC COLUMNS ADDED")
+dim(creditdata[vecNum])
+creditdata_New = cbind(creditdata_dum , creditdata[vecNum])
+#creditdata_New
+names(creditdata_New)
+dim(creditdata_New)
+
+
+```
+
+```{r}
+# remove.packages("scales")
+# install.packages("scales")
+
+library(scales)
+
+credit_scale <- scale(creditdata_New[,-1])
+credit_scale = as.data.frame(credit_scale)
+head(credit_scale)
+
+
+
+```
+
+
+```{r}
+Target = creditdata$CREDIT
+credit_new <- cbind(Target, credit_scale)
+colnames(credit_new)
+```
+
+
+```{r}
+## split into training and test sets
+library(caTools)
+
+set.seed(123)
+split = sample.split(credit_new$Target, SplitRatio = 0.7)
+traindata = subset(credit_new, split == TRUE)
+testdata = subset(credit_new, split == FALSE)
+
+#write.csv(names(traindata), "formula.csv")
+
+```
+
+##Create formula for neural network
+```{r}
+#form_credit = as.formula(Target ~ CHECK_A0to200DM + CHECK_AGT_200DM + CHECK_ALT_0DM + CHECK_ANO_CHECK_A + DURATION + C_HISTcredit_thisbank_paid + C_HISTcritical_acc + C_HISTdelay_in_past + C_HISTexisting_paid + C_HISTno_credit + PURPOSEbusiness + PURPOSEcar_new + PURPOSEcar_used + PURPOSEcar_used0 + PURPOSEdom_app + PURPOSEeducation + PURPOSEfurn_equip + PURPOSEradio_tv + PURPOSErepairs + PURPOSEretrain + AMOUNT + SAVE_A100_500DM + SAVE_A500_1000DM + SAVE_AGT_1000DM + SAVE_Alt_100DM + SAVE_ANO_SAVINGS_ACC + EMPLOY1to4YR + EMPLOY4to7YR + EMPLOYGT_7YR + EMPLOYLT_1YR + EMPLOYunemployed + INSTALL_R + PERSONALFEMALE_DIVORCED + PERSONALMALE_DIVORCED + PERSONALMALE_MARRIED + PERSONALMALE_SINGLE + GUARANTEEco_applicant + GUARANTEEguarantor + GUARANTEEnone + RESIDENCE + PROPERTYno_property + PROPERTYreal_estate + PROPERTYsavings + PROPERTYvehicle + AGE + INSTALL_Pbank + INSTALL_Pnone + INSTALL_Pstores + HOUSINGfor_free + HOUSINGown + HOUSINGrent + N_EXIST + JOBmgmt_selfemp + JOBskilled_office + JOBunskilled_non_res + JOBunskilled_res + N_PEOPLE + TELnone + TELyes + FOREIGNno + FOREIGNyes)
+
+
+form_credit = as.formula(Target ~ `CHECKA_0to200DM` + `CHECKA_GT_200DM` + `CHIST_existing_paid` + `CHIST_no_credit` + `PURPOSE_radio_tv` + `PURPOSE_furn_equip` + `PURPOSE_car_used` + `PURPOSE_dom_app` + `PURPOSE_car_used0` + `SAVEA_NO_SAVINGS_ACC` + `SAVEA_500_1000DM` +
+`SAVEA_100_500DM` + `EMPLOY_1to4YR` + `EMPLOY_unemployed` + `PERSONAL_MALE_SINGLE` + `PERSONAL_MALE_DIVORCED` + `GUARANTEE_none` +  `PROPERTY_savings` + `PROPERTY_vehicle` + `INSTALLP_bank` + `HOUSING_own` + `HOUSING_rent` + `JOB_unskilled_res` + `JOB_unskilled_non_res` + `TEL_none` + `FOREIGN_no` + `CHECKA_LT_0DM` + `CHECKA_NO_CHECK_A` + `CHIST_critical_acc` + `CHIST_delay_in_past` + `CHIST_credit_thisbank_paid` + `PURPOSE_education` + `PURPOSE_car_new` + `PURPOSE_business` + `PURPOSE_repairs` + `PURPOSE_retrain` + `SAVEA_lt_100DM` + `SAVEA_GT_1000DM` + `EMPLOY_GT_7YR` + `EMPLOY_4to7YR` + `EMPLOY_LT_1YR` + `PERSONAL_FEMALE_DIVORCED` + `PERSONAL_MALE_MARRIED` + `GUARANTEE_guarantor` + `PROPERTY_real_estate` + `PROPERTY_no_property` + `INSTALLP_none` + `INSTALLP_stores` + `HOUSING_for_free` + `JOB_skilled_office` + `JOB_mgmt_selfemp` + `TEL_yes` + `FOREIGN_yes` + `DURATION` + `AMOUNT`  +   `INSTALLR` + `RESIDENCE` + `AGE` + `NEXIST`  +   `NPEOPLE`)
+
+print(form_credit)
+
+#form_credit = as.formula(Target ~ `CHECKA_0to200DM` + `CHECKA_GT_200DM` + `CHIST_existing_paid` + `CHIST_no_credit` + `PURPOSE_radio_tv` + `PURPOSE_furn_equip` + `PURPOSE_car_used` + `PURPOSE_dom_app` + `PURPOSE_car_used0` + `SAVEA_NO_SAVINGS_ACC` + `SAVEA_500_1000DM` + `SAVEA_100_500DM` + `EMPLOY_1to4YR` + `EMPLOY_unemployed` + `PERSONAL_MALE_SINGLE` + `PERSONAL_MALE_DIVORCED` + `GUARANTEE_none` +  + `PROPERTY_savings` + `PROPERTY_vehicle` + `INSTALLP_bank` + `HOUSING_own` + `HOUSING_rent` + `JOB_unskilled_res` + `JOB_unskilled_non_res` + `TEL_none` + `FOREIGN_no` + `CHECKA_LT_0DM` + `CHECKA_NO_CHECK_A` + `CHIST_critical_acc` + `CHIST_delay_in_past` + `CHIST_credit_thisbank_paid` + `PURPOSE_education` + `PURPOSE_car_new` + `PURPOSE_business` + `PURPOSE_repairs` + `PURPOSE_retrain` + `SAVEA_lt_100DM` + `SAVEA_GT_1000DM` + `EMPLOY_GT_7YR` + `EMPLOY_4to7YR` + `EMPLOY_LT_1YR` + `PERSONAL_FEMALE_DIVORCED` + `PERSONAL_MALE_MARRIED` + `GUARANTEE_guarantor` + `PROPERTY_real_estate` + `PROPERTY_no_property` + `INSTALLP_none` + `INSTALLP_stores` + `HOUSING_for_free` + `JOB_skilled_office` + `JOB_mgmt_selfemp` + `TEL_yes` + `FOREIGN_yes`)
+
+```
+
+
+#Neural network with single hidden layer
+```{r}
+library(neuralnet)
+?neuralnet
+NN1 =neuralnet(formula=form_credit ,data = traindata, hidden=10, threshold=0.1,lifesign = "full")
+plot(NN1, cex=0.6, lwd=0.1)
+
+
+```
+
+
+
+```{r}
+nn2 <- neuralnet(formula = form_credit,
+                 data = traindata, 
+                 hidden = c(3,3),
+                 linear.output = FALSE,
+                 lifesign = "full",
+                 lifesign.step = 1,
+                 threshold = 0.7,
+                 stepmax = 2000
+)
+
+plot(nn2, cex=0.6)
+```
+
+```{r}
+# nn2$net.result
+summary(nn2$net.result)
+```
+
+
+
+```{r}
+## Assigning the Probabilities to Dev Sample
+traindata$Prob = nn2$net.result[[1]] 
+traindata$Prob
+class(traindata)
+#View(traindata)
+```
+
+
+```{r}
+## The distribution of the estimated probabilities
+hist(traindata$Prob, breaks=20)
+
+## Assgining 0 / 1 class based on certain threshold
+traindata$Class = ifelse(traindata$Prob>0.20,1,0)
+tabtrain = with( traindata, table(Target, as.factor(Class)  ))
+tabtrain
+```
+
+```{r}
+TN_train = tabtrain[1,1]
+TN_train
+
+
+TP_train = tabtrain[2,2]
+TP_train
+
+FN_train = tabtrain[2,1]
+FN_train
+
+FP_train = tabtrain[1,2]
+FP_train
+
+train_acc = (TN_train+TP_train)/(TN_train+TP_train+FN_train+FP_train)
+train_acc
+
+train_sens = TP_train/(TP_train+FN_train)
+train_sens
+
+
+train_spec = TN_train/(TN_train+FP_train)
+train_spec
+```
+
+
+```{r}
+names(testdata)
+```
+
+
+#Predict for test data
+```{r}
+testdata
+compute_test = compute(nn2, testdata[,-1]) 
+testdata$Predict.score = compute_test$net.result
+
+testdata$Class = ifelse(testdata$Predict.score>0.20,1,0)
+tabtest = with( testdata, table(Target, as.factor(Class)  ))
+tabtest
+```
+
+
+
+```{r}
+TN_test = tabtest[1,1]
+TN_test
+
+
+TP_test = tabtest[2,2]
+TP_test
+
+FN_test = tabtest[2,1]
+FN_test
+
+FP_test = tabtest[1,2]
+FP_test
+
+test_acc = (TN_test+TP_test)/(TN_test+TP_test+FN_test+FP_test)
+test_acc
+
+test_sens = TP_test/(TP_test+FN_test)
+test_sens
+
+
+test_spec = TN_test/(TN_test+FP_test)
+test_spec
+```
+
+```{r}
+df_results_train = data.frame(train_acc, train_sens, train_spec)
+names(df_results_train) = c("ACC", "SENS", "SPEC")
+df_results_test = data.frame(test_acc, test_sens, test_spec)
+names(df_results_test) = c("ACC", "SENS", "SPEC")
+
+?rbind
+df_fin =rbind(df_results_train, df_results_test)
+row.names(df_fin) = c('NN_train', 'NN_test')
+round(df_fin,2)
+```
+
+```{r}
+library(pROC)
+#Train data
+roc_obj = roc(traindata$Target, traindata$Prob[,1])
+plot(roc_obj, print.auc = T)
+
+traindata$Prob[,1]
+
+
+#test data
+testdata$Predict.score
+roc_obj1 = roc(testdata$Target, testdata$Predict.score[,1])
+
+
+plot(roc_obj1, print.auc = T)
+
+```
+
+
+
+
+

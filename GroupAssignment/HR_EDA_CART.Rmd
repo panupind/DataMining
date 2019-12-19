@@ -1,0 +1,732 @@
+---
+title: "BABI DataMining Group 10"
+output:
+  html_document: default
+  word_document: default
+---
+
+
+## R Markdown
+
+##This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+##When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Including Plots
+
+#Starting EDA of the Data #
+
+```{r}
+# Read the file and load the data
+library(readr)
+HR_Data <- read_csv("1452762979_586__HR_Employee_Attrition_Data.csv")
+View(HR_Data)
+dim(HR_Data)
+str(HR_Data)
+head(HR_Data)
+tail(HR_Data)
+summary(HR_Data)
+```
+
+
+```{r}
+ HR_Data$Attrition <- as.factor(HR_Data$Attrition)
+ HR_Data$BusinessTravel   <- as.factor(HR_Data$BusinessTravel)
+ HR_Data$Department  <- as.factor(HR_Data$Department)
+ HR_Data$EducationField  <- as.factor(HR_Data$EducationField)
+ HR_Data$Gender  <- as.factor(HR_Data$Gender)
+ HR_Data$JobRole <- as.factor(HR_Data$JobRole)
+ HR_Data$MaritalStatus <- as.factor(HR_Data$MaritalStatus)
+ HR_Data$Over18 <- as.factor(HR_Data$Over18)
+ HR_Data$OverTime <- as.factor(HR_Data$OverTime)
+ 
+ str(HR_Data)
+```
+
+
+
+
+```{r}
+library(lattice)
+library(ggplot2)
+library(corrplot)
+library(ggpubr)
+library(ggplot2)
+library(corrplot)
+```
+
+```{r}
+
+names(HR_Data)
+HR_Data_Corr <- subset(HR_Data, select = -c(Attrition , BusinessTravel  , Department , EducationField , Gender , JobRole , MaritalStatus , Over18 , OverTime  ))
+                       
+str(HR_Data_Corr)
+
+cor(HR_Data_Corr)
+
+#corrplot(HR_Data_Corr , method = "number" , type ="lower" ,  tl.cex = 1.2 , addgrid.col = "gray50" ,  mar=c(0,0,0,0) )
+
+
+ggcorrplot::ggcorrplot(corr = cor(HR_Data_Corr), type= "lower" , lab = TRUE , lab_size = 2, insig = c("pch") )
+                       
+```
+*Based on corr plot it is seen , there is not very strong correlation between ay of the deoendent vriables*
+
+*Stacked Bar chart for categorical variables with Target variable*
+```{r}
+
+#gender
+
+Attr_Gender <- ggplot(HR_Data, aes(x = HR_Data$Gender , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("Gender") + ylab("Attrition")
+
+plot(Attr_Gender)
+
+# Business Travel
+
+Attr_BusinessTravel <- ggplot(HR_Data, aes(x = HR_Data$BusinessTravel , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("BusinessTravel") + ylab("Attrition")
+
+plot(Attr_BusinessTravel)
+
+#Department
+
+Attr_Department <- ggplot(HR_Data, aes(x = HR_Data$Department , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("Department") + ylab("Attrition")
+plot(Attr_Department)
+
+#Education Field
+
+Attr_EducationField <- ggplot(HR_Data, aes(x = HR_Data$EducationField , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("EducationalField") + ylab("Attrition")
+
+plot(Attr_EducationField)
+
+#Education
+
+Attr_Education <- ggplot(HR_Data, aes(x = HR_Data$Education , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("Education") + ylab("Attrition")
+
+plot(Attr_EducationField)
+
+#JobRole
+
+Attr_JobRole <- ggplot(HR_Data, aes(x = HR_Data$JobRole , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("JobRole") + ylab("Attrition")
+
+plot(Attr_JobRole)
+
+#marital Status
+
+Attr_MaritalStatus <- ggplot(HR_Data, aes(x = HR_Data$MaritalStatus , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("MaritalStatus") + ylab("Attrition")
+
+plot(Attr_MaritalStatus)
+
+#Overtime
+
+Attr_OverTime <- ggplot(HR_Data, aes(x = HR_Data$OverTime , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("MaritalStatus") + ylab("Attrition")
+
+
+plot(Attr_OverTime)
+
+#EnvirnmentSatisfaction
+
+Attr_EnvironmentSatisfaction <- ggplot(HR_Data, aes(x = HR_Data$EnvironmentSatisfaction , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("EnvironmentalSatisfaction") + ylab("Attrition")
+
+
+plot(Attr_EnvironmentSatisfaction)
+
+
+#JobInvolvement
+
+Attr_JobInvolvement <- ggplot(HR_Data, aes(x = HR_Data$JobInvolvement , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("JobInvolvement") + ylab("Attrition")
+
+
+plot(Attr_JobInvolvement)
+
+#JobSatisfaction
+
+Attr_JobSatisfaction <- ggplot(HR_Data, aes(x = HR_Data$JobSatisfaction , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("JobSatisfaction") + ylab("Attrition")
+
+
+plot(Attr_JobSatisfaction)
+
+# Performance Rating
+
+Attr_PerformanceRating <- ggplot(HR_Data, aes(x = HR_Data$PerformanceRating , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("PerformanceRating") + ylab("Attrition")
+
+
+plot(Attr_PerformanceRating)
+
+
+#Relationship Satisfaction
+
+Attr_RelationshipSatisfaction <- ggplot(HR_Data, aes(x = HR_Data$RelationshipSatisfaction , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("RelationshipSatisfaction") + ylab("Attrition")
+
+
+plot(Attr_RelationshipSatisfaction)
+
+
+#Work life Balance
+
+Attr_WorkLifeBalance <- ggplot(HR_Data, aes(x = HR_Data$WorkLifeBalance , y = HR_Data$Attrition  , fill = HR_Data$Attrition))+
+  geom_bar( position = "stack" , stat =  "identity" ) + xlab("WorkLifeBalance") + ylab("Attrition")
+
+
+plot(Attr_WorkLifeBalance)
+
+
+
+
+ggarrange(Attr_Gender , Attr_BusinessTravel , Attr_Department , Attr_EducationField , Attr_Education , Attr_JobRole , Attr_MaritalStatus , Attr_OverTime , Attr_EnvironmentSatisfaction , Attr_JobInvolvement , Attr_JobSatisfaction , Attr_PerformanceRating , Attr_RelationshipSatisfaction, Attr_WorkLifeBalance 
+  + rremove("x.text"),
+          heights = c(4, 4 , 4 , 4), widths = c(15 ,15),
+          ncol = 4, nrow = 4)
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+# Age
+
+Attr_Age <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$Age))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red" ) + xlab("Attrition") + ylab("Age")
+
+plot(Attr_Age)
+
+# DistanceFromHome
+
+Attr_DistanceFromHome <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$DistanceFromHome))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("DistanceFromHome")
+
+plot(Attr_DistanceFromHome)
+
+
+# MonthlyIncome
+
+Attr_MonthlyIncome <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$MonthlyIncome))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("MonthlyIncome")
+
+
+plot(Attr_MonthlyIncome)
+
+ 
+# PercentSalaryHike
+
+Attr_PercentSalaryHike <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$PercentSalaryHike))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("PercentSalaryHike")
+
+
+plot(Attr_PercentSalaryHike)
+
+
+
+# StockOptionLevel
+
+
+Attr_StockOptionLevel <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$StockOptionLevel))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("StockOptionLevel")
+
+
+plot(Attr_StockOptionLevel)
+# 
+# TotalWorkingYears
+# 
+Attr_TotalWorkingYears <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$TotalWorkingYears))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("TotalWorkingYears")
+
+
+plot(Attr_TotalWorkingYears)
+
+
+# TrainingTimesLastYear
+
+Attr_TrainingTimesLastYear <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$TrainingTimesLastYear))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("TrainingTimesLastYear")
+
+
+plot(Attr_TrainingTimesLastYear)
+
+# 
+# YearsAtCompany
+# 
+Attr_YearsAtCompany <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$YearsAtCompany))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("YearsAtCompany")
+
+
+plot(Attr_YearsAtCompany)
+
+
+# YearsInCurrentRole
+# 
+Attr_YearsInCurrentRole <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$YearsInCurrentRole))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("YearsInCurrentRole")
+
+
+plot(Attr_YearsInCurrentRole)
+
+
+# YearsSinceLastPromotion
+# 
+Attr_YearsSinceLastPromotion <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$YearsSinceLastPromotion))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("YearsSinceLastPromotion")
+
+
+plot(Attr_YearsSinceLastPromotion)
+
+# 
+# YearsWithCurrManager
+
+Attr_YearsWithCurrManager <- ggplot(HR_Data, aes( x = HR_Data$Attrition  , y = HR_Data$YearsWithCurrManager))+
+  geom_boxplot(stat ="boxplot" ,  outlier.colour = "red") + xlab("Attrition") + ylab("YearsWithCurrManager")
+
+
+plot(Attr_YearsWithCurrManager)
+```
+
+
+```{r}
+# ggarrange(Attr_Age , Attr_DistanceFromHome , Attr_Education,  Attr_JobInvolvement , Attr_JobLevel , Attr_JobSatisfaction , Attr_MonthlyIncome , Attr_PercentSalaryHike , Attr_PerformanceRating , Attr_RelationshipSatisfaction , Attr_StockOptionLevel , Attr_TotalWorkingYears , Attr_TrainingTimesLastYear , Attr_WorLifeBalance , Attr_YearsAtCompany , Attr_YearsInCurrentRole , Attr_YearsSinceLastPromotion , Attr_YearsWithCurrManager   + rremove("x.text"),heights = rep( 100 , each = 9), widths = c(15 ,15), ncol = 2, nrow = 9)
+
+
+```
+
+*Begin Decision tree analysis*
+```{r}
+str(HR_Data)
+prop.table(table(HR_Data$Attrition))
+
+
+```
+
+```{r}
+library(caTools)
+library(caret)
+library(rpart)
+library(rpart.plot)
+```
+
+
+*Based on the dataset shared , the data doesn't seem be extremely biased towards a specific class i.e class of Yes / No*
+
+```{r}
+## split into training and test sets
+
+
+set.seed(123)
+split = sample.split(HR_Data$Attrition, SplitRatio = 0.7)
+HR_traindata = subset(HR_Data, split == TRUE)
+HR_testdata = subset(HR_Data, split == FALSE)
+
+## Check if distribution of partition data is correct Testing dataset
+
+
+# Check the distribution of the proportion in train and test data as well
+
+prop.table(table(HR_traindata$Attrition))
+prop.table(table(HR_testdata$Attrition))
+
+
+```
+*Post split , its seen that train and test data are split retaining the same ratio between Yes and No*
+*We should drop the 4 columns , which are not significant , as there is no criteria for them to split*
+```{r}
+# Develop a fully grown tree
+set.seed(123)
+
+# data$EmployeeCount = NULL
+# data$EmployeeNumber = NULL
+# data$Over18 = NULL
+# data$StandardHours = NULL
+
+hr_tree_full = rpart(formula = HR_traindata$Attrition~., data = HR_traindata , method = "class" )
+rpart.plot(hr_tree_full, cex=0.5)
+
+boxcols <- c("palegreen3", "orange")[hr_tree_full$frame$yval]
+
+par(xpd=TRUE)
+prp(hr_tree_full, faclen = 0, cex = 0.8, extra = 1, box.col = boxcols)
+#summary(tree_full)
+```
+`*Variable importance of full Tree*
+****************Documentation - Compare CART , RF and NN*********
+
+```{r}
+
+#summary(hr_tree_fulltree_full)
+hr_tree_full$variable.importance
+
+hr_df_cart=data.frame(round(hr_tree_full$variable.importance,2))
+hr_df_cart
+```
+*Predict using Train and Test Dataset*
+
+```{r}
+
+## Predict using the CART model
+HR_traindata$predict.class=predict(hr_tree_full,HR_traindata,type="class")
+HR_traindata$predict.score=predict(hr_tree_full,HR_traindata)
+head(HR_traindata$predict.score)
+
+## Creating the confusion matrix
+tabtrain=with(HR_traindata,table(HR_traindata$Attrition,predict.class))
+tabtrain
+
+TN_train = tabtrain[1,1]
+TP_train = tabtrain[2,2]
+FN_train = tabtrain[2,1]
+FP_train = tabtrain[1,2]
+
+train_acc = (TN_train+TP_train)/(TN_train+TP_train+FN_train+FP_train)
+train_acc
+
+train_sens = TP_train/(TP_train+FN_train)
+train_sens
+
+
+train_spec = TN_train/(TN_train+FP_train)
+train_spec
+
+
+```
+
+
+
+```{r}
+# Prediction on Test Data using the same tree built
+
+## Predict using the CART model
+HR_testdata$predict.class=predict(hr_tree_full,HR_testdata,type="class")
+HR_testdata$predict.score=predict(hr_tree_full,HR_testdata)
+
+## Creating the confusion matrix
+tabtest=with(HR_testdata,table(HR_testdata$Attrition,predict.class))
+tabtest
+
+TN_test = tabtest[1,1]
+TP_test = tabtest[2,2]
+FN_test = tabtest[2,1]
+FP_test = tabtest[1,2]
+
+test_acc = (TN_test+TP_test)/(TN_test+TP_test+FN_test+FP_test)
+test_acc
+
+test_sens = TP_test/(TP_test+FN_test)
+test_sens
+
+
+test_spec = TN_test/(TN_test+FP_test)
+test_spec
+```
+
+*Comparing the results of train and test*
+```{r}
+hr_df_results_train = data.frame(train_acc, train_sens, train_spec)
+names(hr_df_results_train) = c("ACC", "SENS", "SPEC")
+hr_df_results_test = data.frame(test_acc, test_sens, test_spec)
+names(hr_df_results_test) = c("ACC", "SENS", "SPEC")
+
+?rbind
+hr_df_final =rbind(hr_df_results_train, hr_df_results_test)
+row.names(hr_df_final) = c('hr_tree_full_train', 'hr_tree_full_test')
+hr_df_final
+```
+
+*Model is performing relatively closer wrt Train and test data*
+*Next steps are to optimize the model , to validate for better accuracy and performance*
+
+*Optimization chosen is by means of pruning the tree based on CV Error, which is minimum*
+
+```{r}
+# Some cleanup before building the next tree
+
+#remove predicted score and class before running other models
+HR_traindata$predict.class = NULL
+HR_traindata$predict.score = NULL
+HR_testdata$predict.class = NULL
+HR_testdata$predict.score = NULL
+```
+
+*The unncessarily complex tree above can be pruned using a cost complexity threshold. Using a complexity threshold of 0.015 gives us a much simpler tree*
+
+```{r}
+
+hr_ptree = prune(hr_tree_full, cp= 0.00001 ,"CP" )
+printcp(hr_ptree)
+hr_ptree
+# rpart.plot(hr_ptree)
+
+rpart.plot(hr_ptree, cex=0.8)
+
+boxcols <- c("palegreen3", "orange")[hr_ptree$frame$yval]
+
+par(xpd=TRUE)
+prp(hr_ptree, faclen = 0, cex = 0.8, extra = 1, box.col = boxcols)
+
+#Variable Importance
+hr_ptree$variable.importance
+
+```
+
+
+
+```{r}
+
+#summary(hr_tree_fulltree_full)
+hr_ptree$variable.importance
+
+hr_df_cart=data.frame(round(hr_ptree$variable.importance,2))
+hr_df_cart
+```
+
+
+*Predict using Train and Test Dataset of  pruned Tree , pruned on CP*
+
+```{r}
+
+## Predict using the CART model
+HR_traindata$predict.class=predict(hr_ptree,HR_traindata,type="class")
+HR_traindata$predict.score=predict(hr_ptree,HR_traindata)
+head(HR_traindata$predict.score)
+
+## Creating the confusion matrix
+tabtrain=with(HR_traindata,table(HR_traindata$Attrition,predict.class))
+tabtrain
+
+TN_train = tabtrain[1,1]
+TP_train = tabtrain[2,2]
+FN_train = tabtrain[2,1]
+FP_train = tabtrain[1,2]
+
+train_acc = (TN_train+TP_train)/(TN_train+TP_train+FN_train+FP_train)
+train_acc
+
+train_sens = TP_train/(TP_train+FN_train)
+train_sens
+
+
+train_spec = TN_train/(TN_train+FP_train)
+train_spec
+
+
+```
+
+
+```{r}
+# Prediction on Test Data using the same tree built
+
+## Predict using the CART model
+HR_testdata$predict.class=predict(hr_ptree,HR_testdata,type="class")
+HR_testdata$predict.score=predict(hr_ptree,HR_testdata)
+
+## Creating the confusion matrix
+tabtest=with(HR_testdata,table(HR_testdata$Attrition,predict.class))
+tabtest
+
+TN_test = tabtest[1,1]
+TP_test = tabtest[2,2]
+FN_test = tabtest[2,1]
+FP_test = tabtest[1,2]
+
+test_acc = (TN_test+TP_test)/(TN_test+TP_test+FN_test+FP_test)
+test_acc
+
+test_sens = TP_test/(TP_test+FN_test)
+test_sens
+
+
+test_spec = TN_test/(TN_test+FP_test)
+test_spec
+```
+
+*Comparing the results of train and test of  a pruned tree pruned on cp*
+```{r}
+hr_df_results_train = data.frame(train_acc, train_sens, train_spec)
+names(hr_df_results_train) = c("ACC", "SENS", "SPEC")
+hr_df_results_test = data.frame(test_acc, test_sens, test_spec)
+names(hr_df_results_test) = c("ACC", "SENS", "SPEC")
+
+?rbind
+hr_df_final =rbind(hr_df_results_train, hr_df_results_test)
+row.names(hr_df_final) = c('hr_pruned_cp_tree_train', 'hr_pruned_cp_tree_test')
+hr_df_final
+
+```
+*Not much of change seen after pruning the tree based on CP*
+*Try pruning the tree based on lowest value of CV , which is considering the option of pruning based on best CP*
+
+
+*cleanup predictor collector variables before that*
+
+```{r}
+
+#remove predicted score and class before running other models
+HR_traindata$predict.class = NULL
+HR_traindata$predict.score = NULL
+HR_testdata$predict.class = NULL
+HR_testdata$predict.score = NULL
+```
+
+
+*Pruning for best CP, based on XV at a minimum*
+```{r}
+
+library(rpart.plot)
+printcp(hr_tree_full)
+plotcp(hr_tree_full)
+
+hr_bestcp=hr_tree_full$cptable[which.min(hr_tree_full$cptable[,"xerror"]),"CP"]
+hr_bestcp
+
+plot(hr_tree_full$cptable)
+
+hr_best_ptree=prune(hr_tree_full,cp=hr_bestcp)
+print(hr_best_ptree)
+rpart.plot(hr_tree_full, cex = 0.8)
+```
+
+*Summary of Variable Importance for Bestfit Tree*
+
+```{r}
+#summary(hr_tree_fulltree_full)
+hr_best_ptree$variable.importance
+
+hr_df_cart=data.frame(round(hr_best_ptree$variable.importance,2))
+hr_df_cart
+```
+
+*Predict using Train and Test Dataset of  pruned Tree , pruned on best CP with Min XV*
+
+```{r}
+
+## Predict using the CART model
+HR_traindata$predict.class=predict(hr_best_ptree,HR_traindata,type="class")
+HR_traindata$predict.score=predict(hr_best_ptree,HR_traindata)
+head(HR_traindata$predict.score)
+
+## Creating the confusion matrix
+tabtrain=with(HR_traindata,table(HR_traindata$Attrition,predict.class))
+tabtrain
+
+TN_train = tabtrain[1,1]
+TP_train = tabtrain[2,2]
+FN_train = tabtrain[2,1]
+FP_train = tabtrain[1,2]
+
+train_acc = (TN_train+TP_train)/(TN_train+TP_train+FN_train+FP_train)
+train_acc
+
+train_sens = TP_train/(TP_train+FN_train)
+train_sens
+
+
+train_spec = TN_train/(TN_train+FP_train)
+train_spec
+
+
+```
+
+```{r}
+# Prediction on Test Data using the same tree built
+
+## Predict using the CART model
+HR_testdata$predict.class=predict(hr_best_ptree,HR_testdata,type="class")
+HR_testdata$predict.score=predict(hr_best_ptree,HR_testdata)
+
+## Creating the confusion matrix
+tabtest=with(HR_testdata,table(HR_testdata$Attrition,predict.class))
+tabtest
+
+TN_test = tabtest[1,1]
+TP_test = tabtest[2,2]
+FN_test = tabtest[2,1]
+FP_test = tabtest[1,2]
+
+test_acc = (TN_test+TP_test)/(TN_test+TP_test+FN_test+FP_test)
+test_acc
+
+test_sens = TP_test/(TP_test+FN_test)
+test_sens
+
+
+test_spec = TN_test/(TN_test+FP_test)
+test_spec
+```
+
+*Comparing the results of train and test of  a pruned tree pruned on best cp with min XV*
+```{r}
+hr_df_results_train = data.frame(train_acc, train_sens, train_spec)
+names(hr_df_results_train) = c("ACC", "SENS", "SPEC")
+hr_df_results_test = data.frame(test_acc, test_sens, test_spec)
+names(hr_df_results_test) = c("ACC", "SENS", "SPEC")
+
+?rbind
+hr_df_final =rbind(hr_df_results_train, hr_df_results_test)
+row.names(hr_df_final) = c('hr_pruned_bestxv_tree_train', 'hr_pruned_bestxv_tree_test')
+hr_df_final
+
+```
+
+
+#Calculate AUC and KS with best model
+```{r}
+## Predict using the CART model
+HR_traindata$predict.class=predict(hr_best_ptree,HR_traindata,type="class")
+HR_traindata$predict.score=predict(hr_best_ptree,HR_traindata)
+HR_traindata$predict.score
+
+#View(HR_traindata)
+
+```
+
+
+```{r}
+library(pROC)
+hr_roc_obj_train = roc(HR_traindata$Attrition, HR_traindata$predict.score[,2])
+
+
+plot(hr_roc_obj_train, print.auc = T)
+
+hr_roc_obj_test = roc(HR_testdata$Attrition, HR_testdata$predict.score[,2])
+
+
+plot(hr_roc_obj_test, print.auc = T)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

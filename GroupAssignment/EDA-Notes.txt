@@ -1,0 +1,134 @@
+Age                     : num  41 49 37 33 27 32 59 30 38 36 ...
+Attrition               : chr  "Yes" "No" "Yes" "No" ...
+BusinessTravel          : chr  "Travel_Rarely" "Travel_Frequently" "Travel_Rarely" "Travel_Frequently" ...
+DailyRate               : num  1102 279 1373 1392 591 ...
+Department              : chr  "Sales" "Research & Development" "Research & Development" "Research & Development" ...
+DistanceFromHome        : num  1 8 2 3 2 2 3 24 23 27 ...
+Education               : num  2 1 2 4 1 2 3 1 3 3 ...
+EducationField          : chr  "Life Sciences" "Life Sciences" "Other" "Life Sciences" ...
+EmployeeCount           : num  1 1 1 1 1 1 1 1 1 1 ...
+EmployeeNumber          : num  1 2 3 4 5 6 7 8 9 10 ...
+EnvironmentSatisfaction : num  2 3 4 4 1 4 3 4 4 3 ...
+Gender                  : chr  "Female" "Male" "Male" "Female" ...
+HourlyRate              : num  94 61 92 56 40 79 81 67 44 94 ...
+JobInvolvement          : num  3 2 2 3 3 3 4 3 2 3 ...
+JobLevel                : num  2 2 1 1 1 1 1 1 3 2 ...
+JobRole                 : chr  "Sales Executive" "Research Scientist" "Laboratory Technician" "Research Scientist" ...
+JobSatisfaction         : num  4 2 3 3 2 4 1 3 3 3 ...
+MaritalStatus           : chr  "Single" "Married" "Single" "Married" ...
+MonthlyIncome           : num  5993 5130 2090 2909 3468 ...
+MonthlyRate             : num  19479 24907 2396 23159 16632 ...
+NumCompaniesWorked      : num  8 1 6 1 9 0 4 1 0 6 ...
+Over18                  : chr  "Y" "Y" "Y" "Y" ...
+OverTime                : chr  "Yes" "No" "Yes" "Yes" ...
+PercentSalaryHike       : num  11 23 15 11 12 13 20 22 21 13 ...
+PerformanceRating       : num  3 4 3 3 3 3 4 4 4 3 ...
+RelationshipSatisfaction: num  1 4 2 3 4 3 1 2 2 2 ...
+StandardHours           : num  80 80 80 80 80 80 80 80 80 80 ...
+StockOptionLevel        : num  0 1 0 0 1 0 3 1 0 2 ...
+TotalWorkingYears       : num  8 10 7 8 6 8 12 1 10 17 ...
+TrainingTimesLastYear   : num  0 3 3 3 3 2 3 2 2 3 ...
+WorkLifeBalance         : num  1 3 3 3 3 2 2 3 3 2 ...
+YearsAtCompany          : num  6 10 0 8 2 7 1 1 9 7 ...
+YearsInCurrentRole      : num  4 7 0 7 2 7 0 0 7 7 ...
+YearsSinceLastPromotion : num  0 1 0 3 2 3 0 0 1 7 ...
+YearsWithCurrManager    : num  5 7 0 0 2 6 0 0 8 7 ...
+
+
+
+
+BusinessTravel  
+Department 
+EducationField 
+Gender 
+JobRole 
+MaritalStatus 
+Over18 
+OverTime
+
+
+
+Attr_Age 
+Attr_DistanceFromHome 
+Attr_Education
+Attr_JobInvolvement 
+Attr_JobLevel 
+Attr_JobSatisfaction 
+Attr_MonthlyIncome 
+Attr_PercentSalaryHike 
+Attr_PerformanceRating 
+Attr_RelationshipSatisfaction 
+Attr_StockOptionLevel 
+Attr_TotalWorkingYears 
+Attr_TrainingTimesLastYear 
+Attr_WorkLifeBalance 
+Attr_YearsAtCompany 
+Attr_YearsInCurrentRole 
+Attr_YearsSinceLastPromotion 
+Attr_YearsWithCurrManager 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BusinessTravel  
+Department 
+EducationField 
+Gender 
+JobRole 
+MaritalStatus 
+Over18 
+OverTime
+
+
+
+
+
+
+Age
+DailyRate
+DistanceFromHome
+Education
+EmployeeCount
+EmployeeNumber
+EnvironmentSatisfaction
+HourlyRate
+JobInvolvement
+JobLevel
+JobSatisfaction
+MonthlyIncome
+MonthlyRate
+NumCompaniesWorked
+PercentSalaryHike
+PerformanceRating
+RelationshipSatisfaction
+StandardHours
+StockOptionLevel
+TotalWorkingYears
+TrainingTimesLastYear
+WorkLifeBalance
+YearsAtCompany
+YearsInCurrentRole
+YearsSinceLastPromotion
+YearsWithCurrManager
+
+
+
+ HR_Data_NN_Active$Attrition <- as.factor(HR_Data_NN_Active$Attrition)
+ HR_Data_NN_Active$BusinessTravel   <- as.factor(HR_Data_NN_Active$BusinessTravel)
+ HR_Data_NN_Active$Department  <- as.factor(HR_Data_NN_Active$Department)
+ HR_Data_NN_Active$EducationField  <- as.factor(HR_Data_NN_Active$EducationField)
+ HR_Data_NN_Active$Gender  <- as.factor(HR_Data_NN_Active$Gender)
+ HR_Data_NN_Active$JobRole <- as.factor(HR_Data_NN_Active$JobRole)
+ HR_Data_NN_Active$MaritalStatus <- as.factor(HR_Data_NN_Active$MaritalStatus)
+ HR_Data_NN_Active$OverTime <- as.factor(HR_Data_NN_Active$OverTime)
+ 

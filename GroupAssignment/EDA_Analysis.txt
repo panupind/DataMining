@@ -1,0 +1,33 @@
+* Dataset consits of 2940 X 35  *
+* There are 9 categorical variables 
+	Attrition , BusinessTravel  , Department , EducationField , Gender , JobRole , MaritalStatus , Over18 , OverTime 
+	Attrition is the Target variale which needs to be predicted based on analysis and construction of the model.
+* Rest of the variables are continuous variables 
+	Age , DailyRate , DistanceFromHome  , Education , EmployeeCount , EmployeeNumber , EnvironmentSatisfaction , HourlyRate ,  JobInvolvement , JobLevel, JobSatisfaction , MonthlyIncome , MonthlyRate  , NumCompaniesWorked  ,  PercentSalaryHike       ,PerformanceRating       ,RelationshipSatisfaction,StandardHours           ,StockOptionLevel        ,TotalWorkingYears       ,TrainingTimesLastYear   ,WorkLifeBalance         ,YearsAtCompany          ,YearsInCurrentRole      ,YearsSinceLastPromotion ,YearsWithCurrManager 
+  * Insignificant or not so relevant columns 
+
+  *CART
+
+  1. Exclude the 4 columns  - Line 309
+  2. Compare Var Imp between CART , NN and RF - Line 329
+  3. Full grown tree 0- Acc is fine , but sensitivity  is low because of FN
+  4. How to change the cutoff in CART - Anugrah
+
+  *Neural Networks
+
+  1. How many outputs are required for the Neural Network model ? DO we need to have different outputs for Yes and No?
+  2. With the original  NN model output of probabilities , compute confusion Mattrix
+
+
+  *Random Forest
+  
+  1. Run the RF with same Dataset . 
+  2. Rerun the Random forest with character dataets converted as factors
+
+  Sorry , I am a bit confused , I thought this is what we discussed from last call
+
+  LNN - Update documentation for EDA , and CART based on the .rmd file that was uploaded in GDrive
+  Prasanna - Update documentation of NN based on the .Rmd file that was uploaded in GDrive
+  Anugragh - Explore further on the cut off for CART , and add any additional code in the CART RMD file that was uploaded in the drive 
+
+  Am I missing something from the discussion ?

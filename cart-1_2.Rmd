@@ -55,6 +55,7 @@ Now lets plot it
 #installs the library rpart.plot if it is not installed in the system
 #install.packages('rpart.plot')
 #loads the library rpart into the system
+trainDS
 trainDS$term = as.factor(trainDS$term)
 trainDS$gender=as.factor(trainDS$gender)
 trainDS$age=as.factor(trainDS$age)

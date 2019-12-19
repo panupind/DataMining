@@ -30,30 +30,34 @@ names(Diabetes_data)
 mydf <- Diabetes_data[Diabetes_data$Diabetes == "N",]
 
 
-nrow(mydf[mydf$Total_Income >= 2 & mydf$Total_Income <= 5,])
+nrow(mydf[mydf$TotalIncome >= 2 & mydf$TotalIncome <= 5,])
 
-nrow(mydf[mydf$LDL_Cholestrol > 127  & mydf$LDL_Cholestrol <= 186,]) / nrow(Diabetes_data)
+nrow(mydf[mydf$LDLCholestrol > 127  & mydf$LDLCholestrol <= 186,]) / nrow(Diabetes_data)
 
 mydfy <- Diabetes_data[Diabetes_data$Diabetes == "Y",]
 
-nrow(mydfy[mydfy$`DailyExercise-Calories_burnt` > 170,]) / nrow(Diabetes_data)
+nrow(mydfy[mydfy$CaloriesBurnt > 170,]) / nrow(Diabetes_data)
 
 
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 ```{r}
+# installed.packages()
 library(dummies)
 str(Diabetes_data)
 ncol(Diabetes_data)
 colnames(Diabetes_data)
+Diabetes_data$Diabetes <- as.factor(Diabetes_data$Diabetes)
 DD_Data <- dummy.data.frame(Diabetes_data[,-5])
-names(DD_Data)
+colnames(DD_Data)
+
 ```
 
 
 
 ```{r}
+#installed.packages()
 library(scales)
 DD_Data
 na.omit(DD_Data)
@@ -70,6 +74,7 @@ DD_New <- cbind(Target, DD_scale)
 #DD_New <- data.frame(DD_New)
 colnames(DD_New)
 class(DD_New)
+str(DD_New)
 ```
 
 ```{r}
@@ -80,7 +85,7 @@ library(ggplot2)
 
 set.seed(123)
 str(Diabetes_data)
-
+DD_Data
 split = sample.split(DD_New$Target, SplitRatio = 0.7)
 traindata = subset(DD_New, split == TRUE)
 testdata = subset(DD_New, split == FALSE)
@@ -91,7 +96,7 @@ class(traindata)
 
 ```{r}
 
-form_DD = as.formula(Target ~ `Total_Income`+ `LDL_Cholestrol`+`DailyExercise-Calories_burnt` + BMI )
+form_DD = as.formula(Target ~ TotalIncome + LDLCholestrol + CaloriesBurnt  + BMI )
 form_DD
 traindata
              
@@ -105,6 +110,7 @@ library(caret)
 traindata
 ?neuralnet
 # debug()
+traindata
 
 NN1 =neuralnet(formula = form_DD ,data = traindata , hidden=10,threshold=0.1,lifesign = "full")
 # undebug()
@@ -112,12 +118,4 @@ plot(NN1, cex=0.6, lwd=0.1)
 
 ```
 
-```{r}
-library(nnet)
-require(nnet)
-?nnet
-nrow(traindata)
-
-model1 <- nnet( x= traindata[,-1] , y = traindata$Target ,  data = traindata, size = 1 , na.rm = TRUE)
-```
 
