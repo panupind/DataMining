@@ -8,10 +8,19 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 gc()
-Sys.setenv(http_proxy = "http://www-proxy.us.oracle.com:80")
-Sys.setenv(https_proxy = "https://www-proxy.us.oracle.com:80")
+#install.packages('rsconnect')
+library(rsconnect)
+#Sys.setenv(http_proxy = "http://www-proxy.us.oracle.com:80")
+#Sys.setenv(https_proxy = "https://www-proxy.us.oracle.com:80")
+Sys.setenv(http_proxy = "")
+Sys.setenv(https_proxy ="")
+Sys.unsetenv("http_proxy")
+Sys.unsetenv("https_proxy")
 Sys.getenv("http_proxy")
 Sys.getenv("https_proxy")
+install.packages("profvis")
+library(profvis)
+
 ```
 
 ## R Markdown

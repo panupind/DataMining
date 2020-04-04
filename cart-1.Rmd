@@ -4,17 +4,19 @@ output:
   html_document: default
 pdf_document: default
 ---
-  
-  ```{r include=FALSE}
+```{r}
 #Replace the below command to point to your working directory
 setwd ("D:/Academic Operations/Data Mining/Supervised Machine Learning Techniques")
 getwd()
 
+```
 Lets begin by loading a very simple dataset that has two independent variables and a dependent variable that is simply labeled "Good" or "Bad". This simple dataset will make visualization easier.
+
+
 
 ```{r}
 #loading the data set into the variable trainDS
-trainDS = read.csv("(CART)simpleDTDS.csv", sep = ",", header = TRUE)
+trainDS = read.csv("..\\Datasets\\(CART)simpleDTDS.csv", sep = ",", header = TRUE)
 #looking at the variable trainDS
 View(trainDS)
 #removing the first column of trainDS
